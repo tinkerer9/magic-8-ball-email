@@ -53,7 +53,7 @@ export default {
             reply.setHeader("References", messageId);
         }
         
-        reply.setSender(message.to);
+        reply.setSender(`Magic 8 Ball <${message.to}>`);
         reply.setRecipient(message.from);
         reply.setSubject(`Re: ${email.subject || "(no subject)"}`);
         
