@@ -2,26 +2,24 @@ import PostalMime from "postal-mime";
 import { createMimeMessage } from "mimetext";
 import { EmailMessage } from "cloudflare:email";
 
-const responses = [
-    "It is certain.",
-    "It is decidedly so.",
-    "You may rely on it.",
-    "Outlook good.",
-    "Signs point to yes.",
-    "Don't count on it.",
-    "My reply is no.",
-    "My sources say no.",
-    "Outlook not so good.",
-    "Very doubtful."
+const responses = [ // 8 responses = 3 bits
+    "It is certain.", // 000
+    "It is decidedly so.", // 001
+    "You may rely on it.", // 010
+    "Signs point to yes.", // 011
+    "Don't count on it.", // 100
+    "My reply is no.", // 101
+    "My sources say no.", // 110
+    "Very doubtful." // 111
 ];
 
 async function getAnswer(input: string): Promise<string> {
     const data = new TextEncoder().encode(input);
     const hash = await crypto.subtle.digest("SHA-256", data);
 
-    const number = new DataView(hash).getUint32(0);
+    const number = new DataView(hash).getUint8(0) >> 5; // extract first 3 bits
 
-    return responses[number % responses.length];
+    return responses[number];
 }
 
 function normalize(text: string): string {
