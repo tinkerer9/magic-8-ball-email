@@ -33,84 +33,79 @@ function normalize(text: string): string {
 
 export default {
     async email(message): Promise<void> {
-        try {
-            console.log("From:", message.from);
-            console.log("To:", message.to);
-            console.log("Message-ID:", message.headers.get("Message-ID"));
-            console.log("References:", message.headers.get("References"));
+        console.log("FROM:", message.from);
+        console.log("TO:", message.to);
+        console.log("MESSAGE-ID:", message.headers.get("Message-ID"));
+        console.log("REFERENCES:", message.headers.get("References"));
 
-            const email = await PostalMime.parse(message.raw);
+        const email = await PostalMime.parse(message.raw);
 
-            const input = [
-                normalize(message.from),
-                normalize(email.subject ?? ""),
-                normalize(email.text ?? "")
-            ].join("\n");
+        const input = [
+            normalize(message.from),
+            normalize(email.subject ?? ""),
+            normalize(email.text ?? "")
+        ].join("\n");
 
-            console.log("Subject:", email.subject ?? "(empty)");
-            console.log("Body:", email.text ?? "(empty)");
+        console.log("SUBJECT:", email.subject ?? "(empty)");
+        console.log("BODY:", email.text?.replace(/\r?\n/g, " ") ?? "(empty)");
 
-            const answer = await getAnswer(input);
+        const answer = await getAnswer(input);
 
-            console.log("Answer:", answer);
+        console.log("ANSWER:", answer);
 
-            const reply = createMimeMessage();
+        const reply = createMimeMessage();
 
-            const messageId = message.headers.get("Message-ID");
-            const references = message.headers.get("References");
+        const messageId = message.headers.get("Message-ID");
+        const references = message.headers.get("References");
 
-            if (messageId) {
-                reply.setHeader("In-Reply-To", messageId);
+        if (messageId) {
+            reply.setHeader("In-Reply-To", messageId);
 
-                const referenceChain = [
-                    references,
-                    messageId
-                ]
-                    .filter(Boolean)
-                    .join(" ");
+            const referenceChain = [
+                references,
+                messageId
+            ]
+                .filter(Boolean)
+                .join(" ");
 
-                console.log("New References:", referenceChain);
+            console.log("NEW REFERENCES:", referenceChain);
 
-                reply.setHeader("References", referenceChain);
-            }
-
-            reply.setSender(
-                `Magic 8 Ball <${message.to}>`
-            );
-            reply.setRecipient(message.from);
-            reply.setSubject(
-                `Re: ${email.subject || "(no subject)"}`
-            );
-
-            reply.addMessage({
-                contentType: "text/plain",
-                data: `🎱 Magic 8 Ball says:\n\n${answer}`
-            });
-
-            reply.addMessage({
-                contentType: "text/html",
-                data: `\
-<div style="font-family: sans-serif; text-align: center;">
-    <div style="font-size: 64px;">🎱</div>
-    <p><strong>Magic 8 Ball says:</strong></p>
-    <p style="font-size: 24px;">${answer}</p>
-</div>`
-            });
-
-            console.log("Sending reply...");
-
-            await message.reply(
-                new EmailMessage(
-                    message.to,
-                    message.from,
-                    reply.asRaw()
-                )
-            );
-
-            console.log("Reply sent!");
-        } catch (error) {
-            console.error("Email Worker error:", error);
-            throw error;
+            reply.setHeader("References", referenceChain);
         }
+
+        reply.setSender(
+            `Magic 8 Ball <${message.to}>`
+        );
+        reply.setRecipient(message.from);
+        reply.setSubject(
+            `Re: ${email.subject || "(no subject)"}`
+        );
+
+        reply.addMessage({
+            contentType: "text/plain",
+            data: `🎱 Magic 8 Ball says:\n\n${answer}`
+        });
+
+        reply.addMessage({
+            contentType: "text/html",
+            data: `\
+<div style="font-family: sans-serif; text-align: center;">
+<div style="font-size: 64px;">🎱</div>
+<p><strong>Magic 8 Ball says:</strong></p>
+<p style="font-size: 24px;">${answer}</p>
+</div>`
+        });
+
+        console.log("SENDING REPLY...");
+
+        await message.reply(
+            new EmailMessage(
+                message.to,
+                message.from,
+                reply.asRaw()
+            )
+        );
+
+        console.log("REPLY SENT");
     }
 } satisfies ExportedHandler;
