@@ -47,10 +47,19 @@ export default {
         const reply = createMimeMessage();
         
         const messageId = message.headers.get("Message-ID");
-        
+        const references = message.headers.get("References");
+
         if (messageId) {
             reply.setHeader("In-Reply-To", messageId);
-            reply.setHeader("References", messageId);
+
+            const referenceChain = [
+                references,
+                messageId
+            ]
+                .filter(Boolean)
+                .join(" ");
+
+            reply.setHeader("References", referenceChain);
         }
         
         reply.setSender(`Magic 8 Ball <${message.to}>`);
@@ -79,7 +88,5 @@ export default {
                 reply.asRaw()
             )
         );
-
-        await message.forward("max@maxparisi.me");
     }
 } satisfies ExportedHandler;
