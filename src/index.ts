@@ -83,7 +83,7 @@ export default {
 
         reply.addMessage({
             contentType: "text/plain",
-            data: `🎱 Magic 8 Ball says:\n\n${answer}`
+            data: `Magic 8 Ball says:\n\n${answer}`
         });
 
         reply.addMessage({
