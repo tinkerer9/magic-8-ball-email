@@ -47,7 +47,7 @@ export default {
         ].join("\n");
 
         console.log("SUBJECT:", email.subject ?? "(empty)");
-        console.log("BODY:", email.text?.replace(/\r?\n/g, " ") ?? "(empty)");
+        console.log("BODY:", email.text?.replace(/\r?\n/g, " ").trim() ?? "(empty)");
 
         const answer = await getAnswer(input);
 
