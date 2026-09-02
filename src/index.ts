@@ -34,7 +34,7 @@ export default {
         console.log("FROM:", message.from);
         console.log("TO:", message.to);
         console.log("MESSAGE-ID:", message.headers.get("Message-ID"));
-        console.log("REFERENCES:", message.headers.get("References"));
+        console.log("REFERENCES:", message.headers.get("References") ?? "(none)");
 
         const email = await PostalMime.parse(message.raw);
 
@@ -104,6 +104,6 @@ export default {
             )
         );
 
-        console.log("REPLY SENT");
+        console.log("REPLY SENT\n");
     }
 } satisfies ExportedHandler;
