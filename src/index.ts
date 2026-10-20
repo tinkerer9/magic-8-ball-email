@@ -31,11 +31,6 @@ function normalize(text: string): string {
 
 export default {
     async email(message): Promise<void> {
-        console.log("FROM:", message.from);
-        console.log("TO:", message.to);
-        console.log("MESSAGE-ID:", message.headers.get("Message-ID"));
-        console.log("REFERENCES:", message.headers.get("References") ?? "(none)");
-
         const email = await PostalMime.parse(message.raw);
 
         const input = [
@@ -44,12 +39,9 @@ export default {
             normalize(email.text ?? "")
         ].join("\n");
 
-        console.log("SUBJECT:", email.subject ?? "(empty)");
-        console.log("BODY:", email.text?.replace(/\r?\n/g, " ").trim() ?? "(empty)");
-
         const answer = await getAnswer(input);
 
-        console.log("ANSWER:", answer);
+        console.log(`${answer}: "${email.subject ? `${email.subject}: ` : ""}${(email.text ?? "").replace(/\s+/g, " ").trim().slice(0, 40)}" (${message.from})`);
 
         const reply = createMimeMessage();
 
@@ -59,25 +51,16 @@ export default {
         if (messageId) {
             reply.setHeader("In-Reply-To", messageId);
 
-            const referenceChain = [
-                references,
-                messageId
-            ]
+            const referenceChain = [ references, messageId ]
                 .filter(Boolean)
                 .join(" ");
-
-            console.log("NEW REFERENCES:", referenceChain);
 
             reply.setHeader("References", referenceChain);
         }
 
-        reply.setSender(
-            `Magic 8 Ball <${message.to}>`
-        );
+        reply.setSender({ name: "Magic 8 Ball", addr: message.to});
         reply.setRecipient(message.from);
-        reply.setSubject(
-            `Re: ${email.subject || "(no subject)"}`
-        );
+        reply.setSubject(`Re: ${email.subject || "(no subject)"}`);
 
         reply.addMessage({
             contentType: "text/plain",
@@ -94,8 +77,6 @@ export default {
 </div>`
         });
 
-        console.log("SENDING REPLY...");
-
         await message.reply(
             new EmailMessage(
                 message.to,
@@ -103,7 +84,5 @@ export default {
                 reply.asRaw()
             )
         );
-
-        console.log("REPLY SENT\n");
     }
 } satisfies ExportedHandler;
