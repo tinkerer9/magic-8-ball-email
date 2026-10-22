@@ -60,13 +60,11 @@ export default {
 
         reply.setSender({ name: "Magic 8 Ball", addr: message.to});
         reply.setRecipient(message.from);
-        reply.setSubject(`Re: ${email.subject || "(no subject)"}`);
-
+        reply.setSubject(`Re: ${(email.subject || "(no subject)").replace(/^(Re:\s*)+/i, "")}`);
         reply.addMessage({
             contentType: "text/plain",
             data: `Magic 8 Ball says: ${answer}`
         });
-
         reply.addMessage({
             contentType: "text/html",
             data: `\
