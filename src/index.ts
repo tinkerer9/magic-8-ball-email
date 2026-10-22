@@ -41,7 +41,7 @@ export default {
 
         const answer = await getAnswer(input);
 
-        console.log(`${answer}: "${email.subject ? `${email.subject}: ` : ""}${(email.text ?? "").replace(/\s+/g, " ").trim()}" (${message.from})`);
+        console.log(`${answer}: "${email.subject}": (${message.from})\n"${(email.text ?? "").replace(/\s+/g, " ").trim()}"`);
 
         const reply = createMimeMessage();
 
